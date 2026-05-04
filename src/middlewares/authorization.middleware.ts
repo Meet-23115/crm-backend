@@ -3,10 +3,7 @@ import { ApiResponse } from "../Api/ApiResponse";
 
 export enum Role {
   ADMIN = "admin",
-  MANAGER = "manager",
-  DEVELOPER = "developer",
-  DESIGNER = "designer",
-  HR = "hr",
+  MEMBER = "member",
 }
 
 interface authorizeProps {

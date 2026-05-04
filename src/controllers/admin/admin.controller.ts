@@ -8,21 +8,24 @@ interface CreateUserRequestBody {
   data: {
     email: string;
     role: string; // You can adjust the type of 'role' based on your system (e.g., enum or string)
+    password: string; // Assuming you want to include a password field
   };
 }
 
 const createUser = asyncHandler(
   async (req: Request<{}, {}, CreateUserRequestBody>, res: Response) => {
-    console.log(req.body);
+    console.log(req.body.data);
     const { data } = req.body;
-    const { email, role } = data;
+    const { email, role, password } = data;
     console.log(email, role);
     try {
       const uuid = await createUserUUID();
+      console.log(uuid);
 
       await User.create({
         email: email,
         role: role,
+        password: password, // Make sure to hash the password before storing it in a real application
         uuid: uuid,
       }).then((user) => {
         res.json(new ApiResponse(200, user, "User created successfully"));

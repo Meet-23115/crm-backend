@@ -26,6 +26,7 @@ export const userAuth = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    console.log("Authenticating user...");
     if (!req.cookies) {
       throw new ApiResponse(
         400,
@@ -33,17 +34,19 @@ export const userAuth = async (
       );
     }
     const token = req.cookies.accessToken;
+    console.log("Access token from cookies:", token);
     if (!token) {
       throw new ApiResponse(401, "Access token missing. Please log in.");
     }
 
     const secret = process.env.ACCESS_TOKEN_SECRET;
+    console.log("Access token secret from environment:", secret);
     if (!secret) {
       throw new ApiResponse(500, "Access token secret is not defined.");
     }
 
     const userData = jwt.verify(token, secret) as JwtPayload;
-
+    console.log("Decoded JWT payload:", userData);
     if (!userData || !userData._id) {
       throw new ApiResponse(401, "Invalid or expired access token.");
     }
@@ -54,9 +57,12 @@ export const userAuth = async (
     }
 
     req.user = user;
+    console.log("here")
     next();
   } catch (error) {
+    console.log("Error occurred while authenticating user:", error);
     if (error instanceof ApiResponse) {
+      
       return next(error);
     }
     next(new ApiResponse(500, "Internal server error while authenticating"));
