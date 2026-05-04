@@ -1,11 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { ApiError } from "@packages/shared-utils/Api/ApiError";
-// import { asyncHandler } from '../utils/asyncHandler';
-import {
-  User,
-  UserDocument,
-} from "@packages/shared-models/src/models/user.model";
+
 import jwt from "jsonwebtoken";
+import { ApiResponse } from "../Api/ApiResponse";
+import { User, UserDocument } from "../models/user.model";
 
 // Define the shape of decoded JWT payload
 interface JwtPayload {
@@ -30,38 +27,38 @@ export const userAuth = async (
 ): Promise<void> => {
   try {
     if (!req.cookies) {
-      throw new ApiError(
+      throw new ApiResponse(
         400,
         "Cookies are not available. Make sure cookie-parser middleware is used."
       );
     }
     const token = req.cookies.accessToken;
     if (!token) {
-      throw new ApiError(401, "Access token missing. Please log in.");
+      throw new ApiResponse(401, "Access token missing. Please log in.");
     }
 
     const secret = process.env.ACCESS_TOKEN_SECRET;
     if (!secret) {
-      throw new ApiError(500, "Access token secret is not defined.");
+      throw new ApiResponse(500, "Access token secret is not defined.");
     }
 
     const userData = jwt.verify(token, secret) as JwtPayload;
 
     if (!userData || !userData._id) {
-      throw new ApiError(401, "Invalid or expired access token.");
+      throw new ApiResponse(401, "Invalid or expired access token.");
     }
 
     const user = await User.findById(userData._id);
     if (!user) {
-      throw new ApiError(404, "User not found.");
+      throw new ApiResponse(404, "User not found.");
     }
 
     req.user = user;
     next();
   } catch (error) {
-    if (error instanceof ApiError) {
+    if (error instanceof ApiResponse) {
       return next(error);
     }
-    next(new ApiError(500, "Internal server error while authenticating"));
+    next(new ApiResponse(500, "Internal server error while authenticating"));
   }
 };

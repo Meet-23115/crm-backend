@@ -7,19 +7,11 @@ const server = express();
 server.use(express.json());
 server.use(cookieParser());
 
-// server.get("/", async (req, res) => {
-//   const start = Date.now();
+import LoginRouter from "./routes/user.route";
+import AdminRouter from "./routes/admin.route";
 
-//   await pool.query("SELECT NOW()", (err, result) => {
-//     if (err) {
-//       console.error("Error executing query:", err);
-//       res.status(500).send("Internal Server Error");
-//     } else {
-//       res.send(result.rows[0]);
-//     }
-//   });
-//   const end = Date.now();
-//   console.log(`Query took ${end - start} ms`);
-// });
+server.use("/api/admin", AdminRouter);
+
+server.use("/api/user", LoginRouter);
 
 export default server;

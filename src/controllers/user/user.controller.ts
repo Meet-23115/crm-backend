@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { ApiResponse } from "../Api/ApiResponse";
-import { asyncHandler } from "../Api/asyncHandler";
-import { User } from "../models/user.model";
+import { ApiResponse } from "../../Api/ApiResponse";
+import { asyncHandler } from "../../Api/asyncHandler";
+import { User } from "../../models/user.model";
 
 const LoginUser = asyncHandler(async (req: Request, res: Response) => {
   const { uuid, password }: { uuid: string; password: string } = req.body;
