@@ -7,17 +7,44 @@ import MemberRouter from "./routes/member.route";
 import AdminRouter from "./routes/admin.route";
 
 const server = express();
+const isProduction = process.env.NODE_ENV === "production";
+
+const configuredOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const allowedOrigins = new Set([
+  "http://localhost:3000",
+  "http://localhost",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1",
+  ...configuredOrigins,
+]);
 
 server.use(express.json());
 server.use(cookieParser());
+server.set("trust proxy", 1);
 server.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost",
-      "http://127.0.0.1:3000",
-      "http://127.0.0.1",
-    ],
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (allowedOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      if (isProduction && /\.vercel\.app$/.test(new URL(origin).hostname)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
   }),
 );

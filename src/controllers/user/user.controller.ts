@@ -1,13 +1,19 @@
 import { Request, Response } from "express";
+import { CookieOptions } from "express";
 import { ApiResponse } from "../../Api/ApiResponse";
 import { asyncHandler } from "../../Api/asyncHandler";
 import { User, UserDocument } from "../../models/user.model";
 
-const cookieOptions = {
-  httpOnly: true,
-  secure: false,
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-  sameSite: "lax" as const,
+const getCookieOptions = (): CookieOptions => {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+  };
 };
 
 const serializeUser = (user: UserDocument) => ({
@@ -49,7 +55,7 @@ const LoginUser = asyncHandler(async (req: Request, res: Response) => {
   await user.save({ validateBeforeSave: false });
 
   return res
-    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("accessToken", accessToken, getCookieOptions())
     .json(new ApiResponse(200, serializeUser(user), "Login success"));
 });
 
@@ -70,7 +76,7 @@ const logoutUser = asyncHandler(async (req: Request, res: Response) => {
   }
 
   return res
-    .clearCookie("accessToken", cookieOptions)
+    .clearCookie("accessToken", getCookieOptions())
     .json(new ApiResponse(200, null, "Logout success"));
 });
 
