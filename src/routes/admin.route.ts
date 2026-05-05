@@ -1,11 +1,22 @@
 import { Router } from "express";
-
-import { userAuth } from "../middlewares/authentication.middleware";
+import {
+  createMember,
+  deleteMember,
+  getMember,
+  listMembers,
+  updateMember,
+} from "../controllers/member.controller";
 import { authorize, Role } from "../middlewares/authorization.middleware";
-import { createUser } from "../controllers/admin/admin.controller";
+import { userAuth } from "../middlewares/authentication.middleware";
 
 const router = Router();
 
-router.route("/createUser").post(userAuth, authorize(Role.ADMIN), createUser);
+router.use(userAuth, authorize(Role.ADMIN));
 
-export default router; //export the router to use it in other files
+router.get("/", listMembers);
+router.post("/", createMember);
+router.get("/:id", getMember);
+router.put("/:id", updateMember);
+router.delete("/:id", deleteMember);
+
+export default router;

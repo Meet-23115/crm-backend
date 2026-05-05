@@ -1,28 +1,23 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "../Api/ApiResponse";
+import { UserRole } from "../models/user.model";
 
-export enum Role {
-  ADMIN = "admin",
-  MEMBER = "member",
-}
+export { UserRole as Role };
 
-interface authorizeProps {
-  allowedRoles: Role;
-}
+export const authorize = (allowedRoles: UserRole | UserRole[]) => {
+  const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
 
-export const authorize = (allowedRoles: authorizeProps["allowedRoles"]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    // Ensure req.user exists (set by a previous authentication middleware)
     if (!req.user) {
-      res.json(new ApiResponse(401, "Unauthorized: User not authenticated."));
-    } else if (req.user)
-      if (!allowedRoles.includes(req.user.role)) {
-        // Check if the user's role is among the allowed roles
-        res.json(new ApiResponse(401, "Not Authorized for this method"));
-      } else {
-        next();
-      }
+      res.status(401).json(new ApiResponse(401, null, "Unauthorized"));
+      return;
+    }
 
-    // User is authorized; proceed to the next middleware/route handler
+    if (!roles.includes(req.user.role)) {
+      res.status(403).json(new ApiResponse(403, null, "Forbidden"));
+      return;
+    }
+
+    next();
   };
 };
